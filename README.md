@@ -1,6 +1,9 @@
 # TiltyBot
 
-TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 motors, and an Anker power bank. This project enables simple two-motor driving and tilting behavior, with plans for future integration of camera and voice command features.
+TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 motors, and an Anker power bank. This project enables simple two-motor driving and tilting behavior, with optional extensions of camera and voice command features.
+
+## Overview
+This repository goes over detailed implementation steps for getting the system up and running. It's a platform for human robot interaction. 
 
 ## Table of Contents
 
@@ -38,17 +41,17 @@ TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 mo
    ```bash
    git clone https://github.com/your-username/tiltybot.git
    cd tiltybot
-
+   ```
 
 2. **Open in VSCode**
-	•	Launch Visual Studio Code
-	•	Open the tiltybot folder
+- Launch Visual Studio Code
+- Open the tiltybot folder
 
 3. **Install PlatformIO**
-	•	Install the PlatformIO extension for VSCode
+- Install the PlatformIO extension for VSCode
 
-4. **Connect Your TinyPICO**
-	•	Use a USB-C to connect your TinyPICO board to your computer
+5. **Connect Your TinyPICO**
+- Use a USB-C to connect your TinyPICO board to your computer
 
 ---
 
@@ -57,32 +60,32 @@ TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 mo
 1. **Select the .cpp File to Run** 
 
 In platformio.ini, locate the build_src_filter section.
-	•	Uncomment the file you want to run by removing the ; at the beginning of the line
-	•	Comment out the others by adding a ; at the beginning
+- Uncomment the file you want to run by removing the ; at the beginning of the line
+- Comment out the others by adding a ; at the beginning
  <img width="351" alt="Screenshot 2025-07-08 at 1 17 45 PM" src="https://github.com/user-attachments/assets/e5ec724c-2561-41ec-aed4-4aca14e01f3e" />
 
 Only one .cpp test file should be active at a time.
 
-2. **Build the LittleFS Filesystem** 
-	•	In the PlatformIO sidebar:
-	•	Click “PlatformIO: Build Filesystem Image”
+2. **Build the LittleFS Filesystem**
+- In the PlatformIO sidebar:
+- Click “PlatformIO: Build Filesystem Image”
 
-3. **Upload Filesystem**
-	•	Click “PlatformIO: Upload Filesystem Image”
+4. **Upload Filesystem**
+- Click “PlatformIO: Upload Filesystem Image”
 
-4. **Upload Code to the Board**
-	•	Click “PlatformIO: Upload” to flash the code
+6. **Upload Code to the Board**
+- Click “PlatformIO: Upload” to flash the code
 
-5. **Open Serial Monitor**
-	•	Use the built-in PlatformIO serial monitor
-	•	Set the baud rate to 115200
+8. **Open Serial Monitor**
+- Use the built-in PlatformIO serial monitor
+- Set the baud rate to 115200
 
 ## Running the Robot
 
 Each .cpp file demonstrates different functionality:
-	•	2motor.cpp: Controls either wheel using a button-based web interface.
-	•	tilty.cpp: Controls the robot in a tilting motion using your phone's GPS.
-	•	drive.cpp: Controls motion control with button-based web interface.
+- 2motor.cpp: Controls either wheel using a button-based web interface.
+- tilty.cpp: Controls the robot in a tilting motion using your phone's GPS.
+- drive.cpp: Controls motion control with button-based web interface.
 
 ⸻
 
@@ -93,14 +96,14 @@ Each .cpp file demonstrates different functionality:
 Select the "YOUGROUPNAME" wifi on your phone.
 
 2. **Upload and Monitor**
-	•	After uploading, check the Serial Monitor for:
-	•	The SSID name
-	•	The IP address (usually something like 192.168.4.1)
+- After uploading, check the Serial Monitor for:
+- The SSID name
+- The IP address (usually something like 192.168.4.1)
 
-3. **Connect via Phone**
-	•	On your phone, connect to the robot’s Wi-Fi SSID
-	•	Enter the IP address in your mobile browser to open the control interface
-  •	A warning will show up asking if you would like to proceed, click on Advanced options and proceed anyway.
+4. **Connect via Phone**
+- On your phone, connect to the robot’s Wi-Fi SSID
+- Enter the IP address in your mobile browser to open the control interface
+- A warning will show up asking if you would like to proceed, click on Advanced options and proceed anyway.
 
 ⸻
 
@@ -113,8 +116,8 @@ Once you’ve tested via USB:
 
 
 Notes
-	•	Only one source file (*.cpp) should be active at a time
-	•	If you plan to extend this with camera and microphone functionality (e.g. Whisper for speech), integrate it after the base mobility works!
+- **Only one source file (*.cpp) should be active at a time**
+- If you plan to extend this with camera and microphone functionality (e.g. Whisper / Browser Speech Recognition for speech), integrate it after the base mobility works!
 
 
 ----
