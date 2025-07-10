@@ -3,7 +3,7 @@
 TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 motors, and an Anker power bank. This project enables simple two-motor driving and tilting behavior, with optional extensions of camera and voice command features.
 
 ## Overview
-This repository goes over detailed implementation steps for getting the system up and running. It's a platform for human robot interaction. 
+This repository provides a step-by-step guide for running TiltyBot: a compact tabletop robot designed for human-robot interaction (HRI) research, prototyping, and creative exploration. Whether you're a researcher, student, or hobbyist, this repo is designed to be reproducible and easy to build on.
 
 ## Table of Contents
 
