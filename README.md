@@ -129,4 +129,4 @@ Control the robot using spoken commands directly from a web browser.
 
 This feature uses the Web Speech API for browser-based voice recognition. It’s lightweight, compatible with most devices, and does not require a backend or cloud setup.
 
-For full setup instructions and implementation details, see the [Voice Control Extension](tiltybot_su25/voice/README.md).
+For full setup instructions and implementation details, see the [Voice Control Extension](/voice/README.md).
