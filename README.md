@@ -9,10 +9,9 @@ TiltyBot is a tabletop robot built using an ESP32 (TinyPICO), Dynamixel XL330 mo
 - [Getting Started](#getting-started)
 - [Flashing the Code](#flashing-the-code)
 - [Running the Robot](#running-the-robot)
-- [Wi-Fi Instructions](#wi-fi-instructions)
+- [Wi-Fi Instructions](#wi-fi-setup)
 - [Powering the Robot](#powering-the-robot)
-- [Next Steps](#next-steps)
-- [License](#license)
+- [Optional Extensions](#optional-extensions)
 
 ---
 
@@ -116,3 +115,18 @@ Once you’ve tested via USB:
 Notes
 	•	Only one source file (*.cpp) should be active at a time
 	•	If you plan to extend this with camera and microphone functionality (e.g. Whisper for speech), integrate it after the base mobility works!
+
+
+----
+
+## Optional Extensions
+
+TiltyBot is designed to be modular and extensible. Once the core mobility is working, you can build on top of it with additional features.
+
+### Voice Command Control
+
+Control the robot using spoken commands directly from a web browser.
+
+This feature uses the Web Speech API for browser-based voice recognition. It’s lightweight, compatible with most devices, and does not require a backend or cloud setup.
+
+For full setup instructions and implementation details, see the [Voice Control Extension](tiltybot_su25/voice/README.md).
