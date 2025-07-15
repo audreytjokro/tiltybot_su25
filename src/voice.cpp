@@ -4,7 +4,7 @@
 #include "init.h"
 #include "network.h"
 
-// Includes for the server
+// // Includes for the server
 #include <HTTPSServer.hpp>
 #include <HTTPRequest.hpp>
 #include <HTTPResponse.hpp>
@@ -13,7 +13,7 @@
 
 #define INDEX_PAGE "/voice.html"
 
-// Robot setup
+// // Robot setup
 #include "XL330.h"
 
 XL330 robot;
@@ -175,6 +175,30 @@ void setup()
 
                 Serial.println("Received command: turnaround");
             }
+            else if (dir == "custom") {
+                int m1 = 90;  // default stop
+                int m2 = 90;
+                if (uri.indexOf("m1=") >= 0) {
+                    int m1Start = uri.indexOf("m1=") + 3;
+                    int m1End = uri.indexOf("&", m1Start);
+                    if (m1End == -1) m1End = uri.length();
+                    m1 = uri.substring(m1Start, m1End).toInt();
+                }
+                if (uri.indexOf("m2=") >= 0) {
+                    int m2Start = uri.indexOf("m2=") + 3;
+                    int m2End = uri.indexOf("&", m2Start);
+                    if (m2End == -1) m2End = uri.length();
+                    m2 = uri.substring(m2Start, m2End).toInt();
+                }
+
+                Serial.printf("🛠️ Custom Motor Control: M1=%d, M2=%d\n", m1, m2);
+
+                robot.setJointSpeed(MOTOR1, m1);
+                robot.setJointSpeed(MOTOR2, m2);
+                delay(500);  // can adjust this
+                robot.setJointSpeed(MOTOR1, 0);
+                robot.setJointSpeed(MOTOR2, 0);
+            }
             res->setStatusCode(200);
             res->println("OK");
             res->flush();
@@ -182,7 +206,7 @@ void setup()
             res->setStatusCode(400);
             res->println("Missing dir parameter.");
             res->flush();
-        }
+        } 
     });
     secureServer->registerNode(moveNode);
 
@@ -193,11 +217,6 @@ void setup()
         Serial.println("Server ready.");
     }
     initRobot(Serial2, robot, DRIVE_MODE);
-
-    Serial.println("Manual Motor2 test...");
-    robot.setJointSpeed(MOTOR2, 180);  // forward
-    delay(1500);                       // longer delay
-    robot.setJointSpeed(MOTOR2, 0);    // stop
     
 }
 

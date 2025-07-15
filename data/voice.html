@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html data-theme="light">
+
+<head>
+  <title>VoiceBot 🤖🎤</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lib/pico.min.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+</head>
+
+<body>
+        <!-- Voice Control Section -->
+    <div class="container">
+        <h5>🎤 Voice Control</h5>
+        <button id="voiceButton">🎤 Hold to Speak</button>
+        <p><small id="voiceStatus">Ready for voice commands</small></p>
+        
+        <!-- Transcription Feedback Area -->
+        <div id="transcriptArea">
+            <div id="transcript" style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin: 8px 0; min-height: 24px; font-style: italic; color: #666;">
+                Hold button and speak clearly...
+            </div>
+            <div id="confidence" style="font-size: 0.8em; color: #999; text-align: center; min-height: 16px;"></div>
+        </div>
+        
+        <details style="margin-top: 8px;">
+            <summary>Voice Commands</summary>
+            <small>
+                <strong>Basic:</strong> "forward", "backward", "left", "right", "stop"<br>
+                <strong>Natural:</strong> "go forward", "turn left", "move backward", "halt"<br>
+                <strong>Special:</strong> "turn around" (180° rotation)
+            </small>
+        </details>
+    </div>
+    
+    <hr>
+  <!-- <h4>alpha: <span id="alpha"></span></h4> -->
+  <h4>Motor1: <span id='pan'></span></h4>
+  <h4>Motor2: <span id='tilt'></span></h4>
+  <label>
+    active: <input id="active" type="checkbox" role="switch">
+  </label>
+  <br />
+
+  <div class="container">
+
+
+  </div>
+
+  <!-- Voice Control Implementation -->
+    <script>
+        // Voice Control System
+        let recognition;
+        let isRecording = false;
+        let sessionData = {
+            sessionId: Date.now(),
+            interactions: []
+        };
+
+        const voiceButton = document.getElementById('voiceButton');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const transcript = document.getElementById('transcript');
+        const confidence = document.getElementById('confidence');
+
+        console.log('🎤 TiltyBot Voice Control initializing...');
+
+        // Initialize Speech Recognition
+        function initVoiceControl() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                // let recognition = window.recognition;
+                
+                // Configure for optimal robot command recognition
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                recognition.maxAlternatives = 3;
+
+                // Speech recognition event handlers
+                recognition.onstart = handleRecognitionStart;
+                recognition.onresult = handleRecognitionResult;
+                recognition.onend = handleRecognitionEnd;
+                recognition.onerror = handleRecognitionError;
+
+                // Button event handlers
+                voiceButton.addEventListener('mousedown', startRecording);
+                voiceButton.addEventListener('mouseup', stopRecording);
+                voiceButton.addEventListener('touchstart', startRecording);
+                voiceButton.addEventListener('touchend', stopRecording);
+                
+                // Prevent context menu on long press
+                voiceButton.addEventListener('contextmenu', e => e.preventDefault());
+
+                voiceStatus.textContent = 'Ready! Hold button and speak';
+                console.log('✅ Voice control ready');
+                
+            } else {
+                voiceButton.disabled = true;
+                voiceStatus.textContent = 'Voice control not supported in this browser';
+                transcript.textContent = 'Please use Chrome, Safari, or Edge for voice control';
+                console.log('❌ Speech recognition not supported');
+            }
+        }
+        
+
+        // Recognition Event Handlers
+        function handleRecognitionStart() {
+            isRecording = true;
+            voiceButton.textContent = '🔴 Listening...';
+            voiceButton.style.background = '#dc3545';
+            voiceStatus.textContent = 'Speak your command now!';
+            transcript.textContent = 'Listening for voice commands...';
+            confidence.textContent = '';
+            console.log('🎙️ Recording started');
+        }
+
+        function handleRecognitionResult(event) {
+            console.log("HERE: Entered fn handle recog")
+            const result = event.results[0];
+            const spokenText = result[0].transcript.toLowerCase().trim();
+
+            const confidenceScore = result[0].confidence || 0.5;
+            
+            console.log('📝 Heard:', spokenText, 'Confidence:', confidenceScore);
+            
+            // Update UI with transcription
+            transcript.textContent = `Heard: "${spokenText}"`;
+            confidence.textContent = `Confidence: ${Math.round(confidenceScore * 100)}%`;
+            
+            // Log interaction data
+            const interaction = {
+                timestamp: new Date().toISOString(),
+                transcript: spokenText,
+                confidence: confidenceScore,
+                success: false,
+                command: null,
+                errorType: null
+            };
+            
+            // Process the voice command
+            processVoiceCommand(spokenText, confidenceScore, interaction);
+        }
+
+        function handleRecognitionEnd() {
+            isRecording = false;
+            voiceButton.textContent = '🎤 Hold to Speak';
+            voiceButton.style.background = '';
+            if (voiceStatus.textContent === 'Speak your command now!') {
+                voiceStatus.textContent = 'Ready! Hold button and speak';
+            }
+            console.log('⏹️ Recording ended');
+        }
+
+        function handleRecognitionError(event) {
+            isRecording = false;
+            voiceButton.textContent = '🎤 Hold to Speak';
+            voiceButton.style.background = '';
+            
+            let errorMessage = 'Voice recognition error';
+            switch(event.error) {
+                case 'no-speech':
+                    errorMessage = 'No speech detected - try again';
+                    break;
+                case 'audio-capture':
+                    errorMessage = 'Microphone error - check permissions';
+                    break;
+                case 'not-allowed':
+                    errorMessage = 'Microphone access denied';
+                    break;
+                default:
+                    errorMessage = `Error: ${event.error}`;
+            }
+            
+            voiceStatus.textContent = errorMessage;
+            transcript.textContent = errorMessage;
+            console.log('❌ Recognition error:', event.error);
+            
+            // Reset after delay
+            setTimeout(() => {
+                voiceStatus.textContent = 'Ready! Hold button and speak';
+                transcript.textContent = 'Hold button and speak clearly...';
+            }, 3000);
+        }
+
+        // Voice Command Processing
+        function processVoiceCommand(spokenText, confidenceScore, interaction) {
+            // Step-based movement command: e.g., "go forward 3 steps"
+            const stepMatch = spokenText.match(/(forward|backward|left|right).*?(\d+)\s+steps?/);
+            if (stepMatch) {
+                const direction = stepMatch[1];
+                const steps = parseInt(stepMatch[2]);
+                fetch(`https://192.168.4.1/move?dir=${direction}&steps=${steps}`);
+                voiceStatus.textContent = `✅ Moving ${direction} ${steps} steps`;
+                interaction.success = true;
+                interaction.command = `${direction}_${steps}_steps`;
+                sessionData.interactions.push(interaction);
+                return;
+            }
+
+            const commands = {
+                forward: {
+                    patterns: ['forward', 'go forward', 'move forward', 'ahead', 'straight', 'go  front', 'go ahead'],
+                    motors: {motor1: 180, motor2: 180},
+                    message: 'Moving forward'
+                },
+                backward: {
+                    patterns: ['backward', 'back', 'reverse', 'go back', 'move back', 'go backward'],
+                    motors: {motor1: 0, motor2: 0},
+                    message: 'Moving backward'
+                },
+                left: {
+                    patterns: ['left', 'turn left', 'go left', 'left please'],
+                    motors: {motor1: 90, motor2: 180},
+                    message: 'Turning left'
+                },
+                right: {
+                    patterns: ['right', 'turn right', 'go right', 'right please'],
+                    motors: {motor1: 180, motor2: 90},
+                    message: 'Turning right'
+                },
+                stop: {
+                    patterns: ['stop', 'halt', 'freeze', 'brake'],
+                    motors: {motor1: 90, motor2: 90},
+                    message: 'Stopped'
+                },
+                turn_around: {
+                    patterns: ['turn around', 'about face', '180', 'spin around'],
+                    motors: {motor1: 180, motor2: 0},
+                    message: 'Turning around',
+                    special: 'turn_around'
+                }
+            };
+
+            // Find matching command
+            let matchedCommand = null;
+            let bestMatch = '';
+            
+            for (const [commandName, commandData] of Object.entries(commands)) {
+                for (const pattern of commandData.patterns) {
+                    if (spokenText.includes(pattern)) {
+                        if (pattern.length > bestMatch.length) {
+                            matchedCommand = commandName;
+                            bestMatch = pattern;
+                        }
+                    }
+                }
+            }
+
+            if (matchedCommand) {
+                const command = commands[matchedCommand];
+                
+                // Confidence-based execution
+                if (confidenceScore >= 0.5) {
+                    // High enough confidence - execute command
+                    // Fallback: send to backend with explicit step=1
+                    fetch(`https://192.168.4.1/move?dir=${matchedCommand}&steps=1`);
+                    executeRobotCommand(matchedCommand, command, interaction);
+                } else {
+                    // Low confidence - ask for confirmation
+                    voiceStatus.textContent = `Low confidence (${Math.round(confidenceScore * 100)}%) - Did you say "${bestMatch}"?`;
+                    interaction.success = false;
+                    interaction.errorType = 'low_confidence';
+                    sessionData.interactions.push(interaction);
+                    
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Ready! Hold button and speak';
+                    }, 4000);
+                }
+            } else {
+                // No command recognized
+                voiceStatus.textContent = `Command not recognized: "${spokenText}"`;
+                transcript.textContent += ` - Try: forward, left, right, turn around`;
+                interaction.success = false;
+                interaction.errorType = 'no_match';
+                sessionData.interactions.push(interaction);
+                
+                setTimeout(() => {
+                    voiceStatus.textContent = 'Ready! Hold button and speak';
+                }, 4000);
+            }
+        }
+
+        // Robot Command Execution
+        function executeRobotCommand(commandName, command, interaction) {
+            console.log('🤖 Executing command:', commandName, command.motors);
+            
+            // Enable motors if needed (using existing TiltyBot functions)
+            if (!active.checked) {
+                active.checked = true;
+                active.onchange({});
+            }
+
+            // Handle special commands
+            if (command.special === 'turn_around') {
+                executeTurnAround(interaction);
+                return;
+            }
+
+            // Standard motor control
+            setMotorValues(command.motors.motor1, command.motors.motor2);
+            
+            // Update interaction log
+            interaction.success = true;
+            interaction.command = commandName;
+            sessionData.interactions.push(interaction);
+            
+            // User feedback
+            voiceStatus.textContent = `✅ ${command.message}`;
+            
+            // Reset status after delay
+            setTimeout(() => {
+                voiceStatus.textContent = 'Ready! Hold button and speak';
+            }, 2500);
+        }
+
+        function executeTurnAround(interaction) {
+            console.log('🔄 Executing 180° turn...');
+            
+            // Start turn
+            setMotorValues(180, 0);
+            voiceStatus.textContent = '✅ Turning around (180°)';
+            
+            // Stop after 2 seconds
+            setTimeout(() => {
+                setMotorValues(90, 90);
+                voiceStatus.textContent = 'Ready! Hold button and speak';
+            }, 2000);
+            
+            // Log interaction
+            interaction.success = true;
+            interaction.command = 'turn_around';
+            sessionData.interactions.push(interaction);
+        }
+
+        function setMotorValues(motor1Val, motor2Val) {
+            fetch(`https://192.168.4.1/move?dir=custom&m1=${motor1Val}&m2=${motor2Val}&steps=1`);
+            console.log(`🎛️ Motors: ${motor1Val}, ${motor2Val}`);
+        }
+
+        // Recording Controls
+        function startRecording(e) {
+            e.preventDefault();
+            if (!recognition || isRecording) return;
+            
+            try {
+                recognition.start();
+            } catch (error) {
+                console.log('Recognition start error:', error);
+            }
+        }
+
+        function stopRecording(e) {
+            e.preventDefault();
+            if (!recognition || !isRecording) return;
+            
+            try {
+                recognition.stop();
+            } catch (error) {
+                console.log('Recognition stop error:', error);
+            }
+        }
+
+        // Research Data Functions
+        function exportSessionData() {
+            const dataStr = JSON.stringify(sessionData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tiltybot_session_${sessionData.sessionId}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Make export function available globally for testing
+        window.exportSessionData = exportSessionData;
+
+        // Initialize when page loads
+        setTimeout(initVoiceControl, 1000);
+        
+        // Log session start
+        console.log('📊 Session started:', sessionData.sessionId);
+    </script>
+
+</body>
+<script type="text/javascript" src="/lib/joystick-controller.min.js"></script>
+<script type="text/javascript" defer src="/voice.js"></script>
+
+<style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #voiceButton {
+            width: 100%;
+            margin: 0.5rem 0;
+            padding: 0.75rem;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        #voiceButton:active {
+            transform: scale(0.98);
+        }
+        
+        #voiceStatus {
+            text-align: center;
+            display: block;
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+        
+        #transcriptArea {
+            margin: 0.5rem 0;
+        }
+        
+        #transcript {
+            min-height: 24px;
+            word-wrap: break-word;
+        }
+        
+        details {
+            margin: 0.5rem 0;
+        }
+        
+        hr {
+            margin: 1rem 0;
+        }
+    </style>
+
+</html>

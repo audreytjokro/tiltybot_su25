@@ -156,20 +156,52 @@ SSLCert *initLittleFS()
     return cert;
 }
 
-// // Initialize WiFi
+// Initialize WiFi
 void initWiFi(const char *ssid, const char *password, const char *index, int mode = AP)
 {
+    // Include lab WiFi credentials (add these at the top of the file)
+    extern const char *lab_wifi_ssid;
+    extern const char *lab_wifi_password;
+    
     if (mode == AP)
     {
-        WiFi.softAP(ssid);
-        IPAddress IP = WiFi.softAPIP();
+        // BRIDGE MODE: Both AP and client
+        WiFi.mode(WIFI_AP_STA);                    // Enable both AP and Station mode
+        
+        // Create access point for phones
+        WiFi.softAP(ssid, password);
+        IPAddress AP_IP = WiFi.softAPIP();
         Serial.print("AP IP address: ");
         Serial.print("HTTPS://");
-        Serial.print(IP);
+        Serial.print(AP_IP);
         Serial.println(index);
+        
+        // Also connect to lab WiFi for internet access
+        Serial.print("Connecting to lab WiFi: ");
+        Serial.println(lab_wifi_ssid);
+        WiFi.begin(lab_wifi_ssid, lab_wifi_password);
+        
+        // Wait for connection (with timeout)
+        int attempts = 0;
+        while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+            delay(500);
+            Serial.print(".");
+            attempts++;
+        }
+        
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println();
+            Serial.print("Connected to WiFi! Local IP: ");
+            Serial.println(WiFi.localIP());
+            Serial.println("Bridge mode active: Phones have internet access");
+        } else {
+            Serial.println();
+            Serial.println("Could not connect to lab WiFi - AP mode only");
+        }
     }
     else
     {
+        // Original client mode (unchanged)
         WiFi.begin(ssid, password);
         while (WiFi.status() != WL_CONNECTED)
         {
@@ -177,7 +209,6 @@ void initWiFi(const char *ssid, const char *password, const char *index, int mod
             Serial.println("Connecting to WiFi..");
         }
 
-        // Print ESP32 Local IP Address
         Serial.print("HTTPS://");
         Serial.print(WiFi.localIP());
         Serial.println(index);
