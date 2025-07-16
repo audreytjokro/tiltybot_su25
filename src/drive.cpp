@@ -42,7 +42,7 @@ void setup()
     SSLCert *cert = initLittleFS();
 
     // Connect to WiFi
-    initWiFi(ssid, password, INDEX_PAGE, LOCAL);
+    initWiFi(ssid, password, INDEX_PAGE, AP);
 
     // Create the server with the certificate we loaded before
     secureServer = initServer(cert);
@@ -79,13 +79,14 @@ WebsocketHandler *ControlHandler::create()
 
 void ControlHandler::onMessage(WebsocketInputStreambuf *inbuf)
 {
+    // changed speed from 885 to 200 for better control
     std::tuple<int, int> result = parseData(inbuf);
     int xRaw = std::get<0>(result);
     int yRaw = std::get<1>(result);
-    int x = map(xRaw, -100, 100, -885, 885);
-    int y = map(yRaw, -100, 100, -885, 885);
-    int speedM1 = constrain(x + y, -855, 855);
-    int speedM2 = constrain(x - y, -855, 855);
+    int x = map(xRaw, -100, 100, -200, 200);
+    int y = map(yRaw, -100, 100, -200, 200);
+    int speedM1 = constrain(x + y, -200, 200);
+    int speedM2 = constrain(x - y, -200, 200);
 
     Serial.print(millis());
     Serial.print(",");

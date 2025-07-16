@@ -9,8 +9,8 @@
 
 const active = document.getElementById('active');
 
-// const m1 = document.getElementById('motor1');
-// const m2 = document.getElementById('motor2');
+const m1 = document.getElementById('motor1');
+const m2 = document.getElementById('motor2');
 JoystickController = JoystickController.default
 
 let b = 0;
