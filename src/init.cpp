@@ -199,20 +199,24 @@ void initWiFi(const char *ssid, const char *password, const char *index, int mod
             Serial.println("Could not connect to lab WiFi - AP mode only");
         }
     }
-    else
-    {
-        // Original client mode (unchanged)
-        WiFi.begin(ssid, password);
-        while (WiFi.status() != WL_CONNECTED)
+        else
         {
-            delay(1000);
-            Serial.println("Connecting to WiFi..");
-        }
+            WiFi.begin(ssid, password);
+            int attempts = 0;
+            while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+                delay(500);
+                Serial.println("Connecting to WiFi..");
+                attempts++;
+            }
 
-        Serial.print("HTTPS://");
-        Serial.print(WiFi.localIP());
-        Serial.println(index);
-    }
+            if (WiFi.status() == WL_CONNECTED) {
+                Serial.print("HTTPS://");
+                Serial.print(WiFi.localIP());
+                Serial.println(index);
+            } else {
+                Serial.println("❌ Failed to connect to WiFi. Please check credentials or retry.");
+            }
+        }
 }
 
 // // We need to specify some content-type mapping, so the resources get delivered with the

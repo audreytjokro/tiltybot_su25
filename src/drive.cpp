@@ -79,14 +79,14 @@ WebsocketHandler *ControlHandler::create()
 
 void ControlHandler::onMessage(WebsocketInputStreambuf *inbuf)
 {
-    // changed speed from 885 to 200 for better control
+    // changed speed from 885 to 150 for better control
     std::tuple<int, int> result = parseData(inbuf);
     int xRaw = std::get<0>(result);
     int yRaw = std::get<1>(result);
-    int x = map(xRaw, -100, 100, -200, 200);
-    int y = map(yRaw, -100, 100, -200, 200);
-    int speedM1 = constrain(x + y, -200, 200);
-    int speedM2 = constrain(x - y, -200, 200);
+    int x = map(xRaw, -100, 100, -150, 150);
+    int y = map(yRaw, -100, 100, -150, 150);
+    int speedM1 = constrain(x + y, -150, 150);
+    int speedM2 = constrain(x - y, -150, 150);
 
     Serial.print(millis());
     Serial.print(",");

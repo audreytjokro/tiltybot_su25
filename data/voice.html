@@ -203,7 +203,7 @@
             const commands = {
                 forward: {
                     patterns: ['forward', 'go forward', 'move forward', 'ahead', 'straight', 'go  front', 'go ahead'],
-                    motors: {motor1: 180, motor2: 180},
+                    motors: {motor1: 200, motor2: 200},
                     message: 'Moving forward'
                 },
                 backward: {
@@ -213,22 +213,22 @@
                 },
                 left: {
                     patterns: ['left', 'turn left', 'go left', 'left please'],
-                    motors: {motor1: 90, motor2: 180},
+                    motors: {motor1: 100, motor2: 200},
                     message: 'Turning left'
                 },
                 right: {
                     patterns: ['right', 'turn right', 'go right', 'right please'],
-                    motors: {motor1: 180, motor2: 90},
+                    motors: {motor1: 200, motor2: 100},
                     message: 'Turning right'
                 },
                 stop: {
                     patterns: ['stop', 'halt', 'freeze', 'brake'],
-                    motors: {motor1: 90, motor2: 90},
+                    motors: {motor1: 0, motor2: 0},
                     message: 'Stopped'
                 },
                 turn_around: {
                     patterns: ['turn around', 'about face', '180', 'spin around'],
-                    motors: {motor1: 180, motor2: 0},
+                    motors: {motor1: 200, motor2: 0},
                     message: 'Turning around',
                     special: 'turn_around'
                 }

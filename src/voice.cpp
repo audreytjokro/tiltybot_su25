@@ -65,160 +65,80 @@ void setup()
             if (endIdx == -1) endIdx = uri.length();
             dir = uri.substring(idx + 4, endIdx);
         }
-        if (!dir.isEmpty()) {
-            int posDelta = 600;
-            int steps = 1;
 
-            int stepsIdx = uri.indexOf("steps=");
-            if (stepsIdx >= 0) {
-                int stepsEndIdx = uri.indexOf("&", stepsIdx);
-                if (stepsEndIdx == -1) stepsEndIdx = uri.length();
-                steps = uri.substring(stepsIdx + 6, stepsEndIdx).toInt();
-                if (steps <= 0) steps = 1;
-            }
+        delay(100);
 
-            int moveDelta = posDelta * steps;
-            if (uri.indexOf("move") >= 0 && uri.indexOf("steps=") == -1) {
-                steps = 1;
-                moveDelta = posDelta;
-            }
+        int moveSpeed = 200;
+        int moveDuration = 600;  // ms
 
-            Serial.print("Direction: ");
-            Serial.println(dir);
-            Serial.print("Steps: ");
-            Serial.println(steps);
-            Serial.print("Delta: ");
-            Serial.println(moveDelta);
+        if (dir == "forward" || dir == "go" || dir == "goforward") {
+            Serial.print("M1 command: "); Serial.println(moveSpeed);
+            robot.setJointSpeed(MOTOR1, moveSpeed);
+            Serial.print("M2 command: "); Serial.println(moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+            delay(moveDuration);
+            robot.setJointSpeed(MOTOR1, 0);
+            robot.setJointSpeed(MOTOR2, 0);
+            Serial.println("Received command: forward");
+        } else if (dir == "back" || dir == "backward" || dir == "gobackward") {
+            robot.setJointSpeed(MOTOR1, -moveSpeed);
+            robot.setJointSpeed(MOTOR2, -moveSpeed);
+            delay(moveDuration);
+            robot.setJointSpeed(MOTOR1, 0);
+            robot.setJointSpeed(MOTOR2, 0);
+            Serial.println("Received command: backward");
+        } else if (dir == "left" || dir == "turnleft") {
+            robot.setJointSpeed(MOTOR1, -moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+            delay(moveDuration);
+            robot.setJointSpeed(MOTOR1, 0);
+            robot.setJointSpeed(MOTOR2, 0);
+            Serial.println("Received command: left");
+        } else if (dir == "right" || dir == "turnright") {
+            robot.setJointSpeed(MOTOR1, moveSpeed);
+            robot.setJointSpeed(MOTOR2, -moveSpeed);
+            delay(moveDuration);
+            robot.setJointSpeed(MOTOR1, 0);
+            robot.setJointSpeed(MOTOR2, 0);
+            Serial.println("Received command: right");  
+        } else if (dir == "stop" || dir == "halt") {
+            robot.setJointSpeed(MOTOR1, 0);
+            robot.setJointSpeed(MOTOR2, 0);
+        } else if (dir == "turnaround" || dir == "turn_around") {
+            robot.setJointSpeed(MOTOR1, moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+            delay(moveDuration);
 
-            int speed = 200;      // how fast they spin
-            int duration = 600 * steps; // how long they spin. double to move further every time we speak
+            robot.setJointSpeed(MOTOR1, -moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+            delay(moveDuration);
 
-            if (
-                dir == "forward" ||
-                dir == "go" ||
-                dir == "goforward" ||
-                dir == "go_forward" ||
-                dir == "go front" ||
-                dir == "go_front" ||
-                dir == "front"
-            ) {
-                robot.setJointSpeed(MOTOR1, speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-                Serial.println("Received command: forward");
-            } else if (
-                dir == "backward" ||
-                dir == "gobackward" ||
-                dir == "go back" ||
-                dir == "go_back" ||
-                dir == "back"
-            ) {
-                robot.setJointSpeed(MOTOR1, -speed);
-                robot.setJointSpeed(MOTOR2, -speed);
-                delay(duration);
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-                Serial.println("Received command: backward");
-            } else if (
-                dir == "left" ||
-                dir == "go left" ||
-                dir == "go_left"
-            ) {
-                robot.setJointSpeed(MOTOR1, -speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-                Serial.println("Received command: left");
-            } else if (
-                dir == "right" ||
-                dir == "go right" ||
-                dir == "go_right"
-            ) {
-                robot.setJointSpeed(MOTOR1, speed);
-                robot.setJointSpeed(MOTOR2, -speed);
-                delay(duration);
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-                Serial.println("Received command: right");
-            } else if (
-                dir == "turnaround" ||
-                dir == "turn_around" ||
-                dir == "turn around" ||
-                dir == "go around left"
-            ) {
-                // Step 1: forward
-                robot.setJointSpeed(MOTOR1, speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
+            robot.setJointSpeed(MOTOR1, -moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+            delay(moveDuration);
 
-                // Step 2: left
-                robot.setJointSpeed(MOTOR1, -speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
+            robot.setJointSpeed(MOTOR1, moveSpeed);
+            robot.setJointSpeed(MOTOR2, moveSpeed);
+        }
 
-                // Step 3: left again
-                robot.setJointSpeed(MOTOR1, -speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
+        // delay(moveDuration);
+        // robot.setJointSpeed(MOTOR1, 0);
+        // robot.setJointSpeed(MOTOR2, 0);
 
-                // Step 4: forward again
-                robot.setJointSpeed(MOTOR1, speed);
-                robot.setJointSpeed(MOTOR2, speed);
-                delay(duration);
-
-                // Stop
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-
-                Serial.println("Received command: turnaround");
-            }
-            else if (dir == "custom") {
-                int m1 = 90;  // default stop
-                int m2 = 90;
-                if (uri.indexOf("m1=") >= 0) {
-                    int m1Start = uri.indexOf("m1=") + 3;
-                    int m1End = uri.indexOf("&", m1Start);
-                    if (m1End == -1) m1End = uri.length();
-                    m1 = uri.substring(m1Start, m1End).toInt();
-                }
-                if (uri.indexOf("m2=") >= 0) {
-                    int m2Start = uri.indexOf("m2=") + 3;
-                    int m2End = uri.indexOf("&", m2Start);
-                    if (m2End == -1) m2End = uri.length();
-                    m2 = uri.substring(m2Start, m2End).toInt();
-                }
-
-                Serial.printf("🛠️ Custom Motor Control: M1=%d, M2=%d\n", m1, m2);
-
-                robot.setJointSpeed(MOTOR1, m1);
-                robot.setJointSpeed(MOTOR2, m2);
-                delay(500);  // can adjust this
-                robot.setJointSpeed(MOTOR1, 0);
-                robot.setJointSpeed(MOTOR2, 0);
-            }
-            res->setStatusCode(200);
-            res->println("OK");
-            res->flush();
-        } else {
-            res->setStatusCode(400);
-            res->println("Missing dir parameter.");
-            res->flush();
-        } 
+        res->setStatusCode(200);
+        res->println("OK");
+        res->flush();
     });
     secureServer->registerNode(moveNode);
 
     Serial.println("Starting server...");
     secureServer->start();
-    if (secureServer->isRunning())
-    {
+    if (secureServer->isRunning()) {
         Serial.println("Server ready.");
     }
     initRobot(Serial2, robot, DRIVE_MODE);
-    
 }
+
 
 void loop()
 {
